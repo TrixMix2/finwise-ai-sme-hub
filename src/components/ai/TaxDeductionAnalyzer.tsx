@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 
 interface TaxDeductionAnalyzerProps {
   apiKey: string;
+  provider: string;
 }
 
 // Sample expense data to analyze
@@ -21,7 +22,7 @@ const sampleExpenses = [
   { category: "Marketing", amount: 1650.00 }
 ];
 
-export default function TaxDeductionAnalyzer({ apiKey }: TaxDeductionAnalyzerProps) {
+export default function TaxDeductionAnalyzer({ apiKey, provider }: TaxDeductionAnalyzerProps) {
   const [loading, setLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<{
     deductions: { category: string; amount: number; confidence: number }[];
@@ -32,7 +33,7 @@ export default function TaxDeductionAnalyzer({ apiKey }: TaxDeductionAnalyzerPro
     if (!apiKey) {
       toast({
         title: "API Key Required",
-        description: "Please provide an OpenAI API key to use this feature.",
+        description: `Please provide a ${provider === "openai" ? "OpenAI" : "Groq"} API key to use this feature.`,
         variant: "destructive",
       });
       return;
@@ -40,7 +41,7 @@ export default function TaxDeductionAnalyzer({ apiKey }: TaxDeductionAnalyzerPro
 
     setLoading(true);
     try {
-      const result = await analyzeTaxDeductions(sampleExpenses, apiKey);
+      const result = await analyzeTaxDeductions(sampleExpenses, apiKey, provider);
       setAnalysisResult(result);
     } catch (error) {
       console.error("Error analyzing tax deductions:", error);

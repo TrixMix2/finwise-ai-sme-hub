@@ -9,9 +9,10 @@ import { toast } from "@/hooks/use-toast";
 
 interface DocumentAnalyzerProps {
   apiKey: string;
+  provider: string;
 }
 
-export default function DocumentAnalyzer({ apiKey }: DocumentAnalyzerProps) {
+export default function DocumentAnalyzer({ apiKey, provider }: DocumentAnalyzerProps) {
   const [documentText, setDocumentText] = useState("");
   const [analysisResult, setAnalysisResult] = useState<{
     documentType: string;
@@ -33,7 +34,7 @@ export default function DocumentAnalyzer({ apiKey }: DocumentAnalyzerProps) {
     if (!apiKey) {
       toast({
         title: "API Key Required",
-        description: "Please provide an OpenAI API key to use this feature.",
+        description: `Please provide a ${provider === "openai" ? "OpenAI" : "Groq"} API key to use this feature.`,
         variant: "destructive",
       });
       return;
@@ -41,7 +42,7 @@ export default function DocumentAnalyzer({ apiKey }: DocumentAnalyzerProps) {
 
     setLoading(true);
     try {
-      const result = await analyzeFinancialDocument(documentText, apiKey);
+      const result = await analyzeFinancialDocument(documentText, apiKey, provider);
       setAnalysisResult(result);
     } catch (error) {
       console.error("Error analyzing document:", error);

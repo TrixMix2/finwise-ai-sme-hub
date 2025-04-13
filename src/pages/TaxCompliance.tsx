@@ -1,16 +1,18 @@
+
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileDown, Download, Calendar, Brain, FileText } from "lucide-react";
-import OpenAIKeyInput from "@/components/ai/OpenAIKeyInput";
+import LLMKeyInput from "@/components/ai/OpenAIKeyInput";
 import TaxDeductionAnalyzer from "@/components/ai/TaxDeductionAnalyzer";
 import DocumentAnalyzer from "@/components/ai/DocumentAnalyzer";
 
 export default function TaxCompliance() {
   const [loading, setLoading] = useState(true);
   const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState("openai");
   
   useEffect(() => {
     // Simulate data loading
@@ -20,6 +22,11 @@ export default function TaxCompliance() {
     
     return () => clearTimeout(timer);
   }, []);
+  
+  const handleKeySubmit = (key: string, selectedProvider: string) => {
+    setApiKey(key);
+    setProvider(selectedProvider);
+  };
   
   if (loading) {
     return (
@@ -232,11 +239,16 @@ export default function TaxCompliance() {
           </TabsContent>
           
           <TabsContent value="ai-analysis" className="space-y-6">
-            <OpenAIKeyInput onKeySubmit={setApiKey} hasKey={!!apiKey} />
+            <LLMKeyInput 
+              onKeySubmit={handleKeySubmit} 
+              hasKey={!!apiKey} 
+              provider={provider}
+              onProviderChange={setProvider}
+            />
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <TaxDeductionAnalyzer apiKey={apiKey} />
-              <DocumentAnalyzer apiKey={apiKey} />
+              <TaxDeductionAnalyzer apiKey={apiKey} provider={provider} />
+              <DocumentAnalyzer apiKey={apiKey} provider={provider} />
             </div>
           </TabsContent>
         </Tabs>

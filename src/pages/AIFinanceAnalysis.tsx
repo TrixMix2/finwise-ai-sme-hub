@@ -2,7 +2,7 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import OpenAIKeyInput from "@/components/ai/OpenAIKeyInput";
+import LLMKeyInput from "@/components/ai/OpenAIKeyInput";
 import DocumentAnalyzer from "@/components/ai/DocumentAnalyzer";
 import TaxDeductionAnalyzer from "@/components/ai/TaxDeductionAnalyzer";
 import { Brain, FileText, Calculator, PieChart } from "lucide-react";
@@ -10,6 +10,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function AIFinanceAnalysis() {
   const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState("openai");
+  
+  const handleKeySubmit = (key: string, selectedProvider: string) => {
+    setApiKey(key);
+    setProvider(selectedProvider);
+  };
   
   return (
     <DashboardLayout>
@@ -21,7 +27,12 @@ export default function AIFinanceAnalysis() {
           </p>
         </div>
         
-        <OpenAIKeyInput onKeySubmit={setApiKey} hasKey={!!apiKey} />
+        <LLMKeyInput 
+          onKeySubmit={handleKeySubmit} 
+          hasKey={!!apiKey} 
+          provider={provider}
+          onProviderChange={setProvider}
+        />
         
         <Tabs defaultValue="documents" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-8">
@@ -40,7 +51,7 @@ export default function AIFinanceAnalysis() {
           </TabsList>
           
           <TabsContent value="documents" className="space-y-6">
-            <DocumentAnalyzer apiKey={apiKey} />
+            <DocumentAnalyzer apiKey={apiKey} provider={provider} />
             
             <Card>
               <CardHeader>
@@ -83,7 +94,7 @@ export default function AIFinanceAnalysis() {
           </TabsContent>
           
           <TabsContent value="tax" className="space-y-6">
-            <TaxDeductionAnalyzer apiKey={apiKey} />
+            <TaxDeductionAnalyzer apiKey={apiKey} provider={provider} />
           </TabsContent>
           
           <TabsContent value="forecast" className="space-y-6">
