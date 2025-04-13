@@ -13,7 +13,6 @@ import {
   LogOut, 
   Moon, 
   Sun, 
-  Users,
   CreditCard,
   DollarSign,
   LucideIcon,
@@ -125,12 +124,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       title: "Accounts",
       href: "/accounts",
       icon: CreditCard,
-    },
-    {
-      title: "Team Members",
-      href: "/team",
-      icon: Users,
-      ownerOnly: true,
     },
     {
       title: "Settings",

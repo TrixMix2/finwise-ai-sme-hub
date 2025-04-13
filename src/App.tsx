@@ -8,6 +8,9 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Budgeting from "./pages/Budgeting";
+import TaxCompliance from "./pages/TaxCompliance";
+import Accounts from "./pages/Accounts";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,12 +26,10 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/budgeting" element={<Budgeting />} />
-          {/* Add placeholder routes for other pages */}
+          <Route path="/tax-compliance" element={<TaxCompliance />} />
+          <Route path="/accounts" element={<Accounts />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/reports" element={<Dashboard />} />
-          <Route path="/tax-compliance" element={<Dashboard />} />
-          <Route path="/accounts" element={<Dashboard />} />
-          <Route path="/team" element={<Dashboard />} />
-          <Route path="/settings" element={<Dashboard />} />
           {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
