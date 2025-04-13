@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/providers/AuthProvider";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
@@ -22,19 +23,21 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/transactions" element={<Transactions />} />
-          <Route path="/budgeting" element={<Budgeting />} />
-          <Route path="/tax-compliance" element={<TaxCompliance />} />
-          <Route path="/accounts" element={<Accounts />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/reports" element={<Dashboard />} />
-          <Route path="/ai-analysis" element={<AIFinanceAnalysis />} />
-          {/* Catch-all route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/budgeting" element={<Budgeting />} />
+            <Route path="/tax-compliance" element={<TaxCompliance />} />
+            <Route path="/accounts" element={<Accounts />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/reports" element={<Dashboard />} />
+            <Route path="/ai-analysis" element={<AIFinanceAnalysis />} />
+            {/* Catch-all route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

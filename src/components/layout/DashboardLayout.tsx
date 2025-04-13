@@ -20,9 +20,9 @@ import {
   Menu,
   X
 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import ChatAssistant from "@/components/chat/ChatAssistant";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface NavItem {
   title: string;
@@ -40,30 +40,27 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatOpen, setChatOpen] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [companyName, setCompanyName] = useState<string | null>("Your Company");
+  const [companyName, setCompanyName] = useState<string>("Your Company");
   
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const { toast } = useToast();
   const navigate = useNavigate();
+  const { user, session, loading, signOut } = useAuth();
+
+  // Get user metadata
+  const userRole = user?.user_metadata?.role || 'owner';
+  const userEmail = user?.email || '';
 
   useEffect(() => {
     // Check if user is authenticated
-    const isAuthenticated = localStorage.getItem("isAuthenticated");
-    if (!isAuthenticated) {
+    if (!loading && !session) {
       navigate("/");
       return;
     }
 
-    // Get user role from localStorage
-    const storedRole = localStorage.getItem("userRole");
-    const storedEmail = localStorage.getItem("userEmail");
-    const storedCompanyName = localStorage.getItem("companyName");
-    
-    setUserRole(storedRole);
-    setUserEmail(storedEmail);
-    if (storedCompanyName) setCompanyName(storedCompanyName);
+    // Get company name from user metadata
+    if (user?.user_metadata?.company_name) {
+      setCompanyName(user.user_metadata.company_name);
+    }
     
     // Check system preference for theme
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -75,7 +72,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     if (isMobile) {
       setSidebarOpen(false);
     }
-  }, [navigate, isMobile]);
+  }, [navigate, isMobile, session, loading, user]);
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
@@ -83,16 +80,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userRole");
-    localStorage.removeItem("userEmail");
-    
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    });
-    
-    navigate("/");
+    signOut();
   };
 
   const navItems: NavItem[] = [
@@ -142,6 +130,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     if (!email) return "U";
     return email.split("@")[0].substring(0, 2).toUpperCase();
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-background">

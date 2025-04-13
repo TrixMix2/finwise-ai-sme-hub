@@ -6,20 +6,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { analyzeFinancialDocument } from "@/utils/openai";
 import { Loader2, FileText, FileCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface DocumentAnalyzerProps {
   apiKey: string;
   provider: string;
 }
 
+interface AnalysisResult {
+  documentType: string;
+  entities: { name: string; value: string }[];
+  summary: string;
+}
+
 export default function DocumentAnalyzer({ apiKey, provider }: DocumentAnalyzerProps) {
   const [documentText, setDocumentText] = useState("");
-  const [analysisResult, setAnalysisResult] = useState<{
-    documentType: string;
-    entities: { name: string; value: string }[];
-    summary: string;
-  } | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   const handleAnalyze = async () => {
     if (!documentText.trim()) {
@@ -44,6 +49,27 @@ export default function DocumentAnalyzer({ apiKey, provider }: DocumentAnalyzerP
     try {
       const result = await analyzeFinancialDocument(documentText, apiKey, provider);
       setAnalysisResult(result);
+
+      // Save analysis to Supabase if user is authenticated
+      if (user) {
+        // Check if we have a documents table or create one
+        const { error: tableError } = await supabase
+          .from('document_analyses')
+          .insert([
+            { 
+              user_id: user.id,
+              document_type: result.documentType,
+              entities: result.entities,
+              summary: result.summary,
+              document_text: documentText,
+              created_at: new Date()
+            }
+          ]);
+          
+        if (tableError) {
+          console.error("Error saving analysis:", tableError);
+        }
+      }
     } catch (error) {
       console.error("Error analyzing document:", error);
       toast({

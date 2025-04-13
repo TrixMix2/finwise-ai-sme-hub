@@ -1,18 +1,19 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import AuthForm from "@/components/auth/AuthForm";
+import { useAuth } from '@/providers/AuthProvider';
 
 const Index = () => {
   const navigate = useNavigate();
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+  const { session, loading } = useAuth();
 
-  React.useEffect(() => {
-    if (isAuthenticated) {
+  useEffect(() => {
+    if (!loading && session) {
       navigate("/dashboard");
     }
-  }, [isAuthenticated, navigate]);
+  }, [session, loading, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row">

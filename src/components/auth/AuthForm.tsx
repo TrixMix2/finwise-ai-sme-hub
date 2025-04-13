@@ -6,16 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/providers/AuthProvider";
+import { supabase } from "@/lib/supabase";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const { loading, signIn, signUp } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -30,28 +30,12 @@ export default function AuthForm() {
     companyName: "",
   });
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // For demo purposes, we'll accept any login
-      localStorage.setItem("userRole", "owner");
-      localStorage.setItem("userEmail", loginData.email);
-      localStorage.setItem("isAuthenticated", "true");
-      
-      toast({
-        title: "Success!",
-        description: "You have successfully logged in.",
-      });
-      
-      navigate("/dashboard");
-      setLoading(false);
-    }, 1000);
+    await signIn(loginData.email, loginData.password);
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (registerData.password !== registerData.confirmPassword) {
@@ -62,25 +46,34 @@ export default function AuthForm() {
       });
       return;
     }
-    
-    setLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      // For demo purposes
-      localStorage.setItem("userRole", registerData.role);
-      localStorage.setItem("userEmail", registerData.email);
-      localStorage.setItem("companyName", registerData.companyName);
-      localStorage.setItem("isAuthenticated", "true");
-      
+
+    // Create company first
+    const { data: companyData, error: companyError } = await supabase
+      .from('companies')
+      .insert([{ name: registerData.companyName }])
+      .select();
+
+    if (companyError) {
       toast({
-        title: "Account created!",
-        description: "You have successfully registered an account.",
+        title: "Error creating company",
+        description: companyError.message,
+        variant: "destructive",
       });
-      
-      navigate("/dashboard");
-      setLoading(false);
-    }, 1000);
+      return;
+    }
+
+    const company_id = companyData[0].id;
+    
+    // Then sign up the user with company metadata
+    await signUp(
+      registerData.email, 
+      registerData.password, 
+      { 
+        role: registerData.role,
+        company_id,
+        company_name: registerData.companyName
+      }
+    );
   };
 
   return (
