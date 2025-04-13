@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PlusCircle, CreditCard, Bank, RefreshCw } from "lucide-react";
+import { PlusCircle, CreditCard, Building, RefreshCw } from "lucide-react";
 
 export default function Accounts() {
   const [loading, setLoading] = useState(true);
@@ -61,7 +61,7 @@ export default function Accounts() {
                     <CardTitle>Business Checking</CardTitle>
                     <CardDescription>First National Bank</CardDescription>
                   </div>
-                  <Bank className="h-5 w-5 text-muted-foreground" />
+                  <Building className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold mb-4">$24,625.00</div>
@@ -86,7 +86,7 @@ export default function Accounts() {
                     <CardTitle>Business Savings</CardTitle>
                     <CardDescription>First National Bank</CardDescription>
                   </div>
-                  <Bank className="h-5 w-5 text-muted-foreground" />
+                  <Building className="h-5 w-5 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-3xl font-bold mb-4">$15,840.75</div>
