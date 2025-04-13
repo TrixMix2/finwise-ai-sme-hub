@@ -1,13 +1,16 @@
-
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileDown, Download, Calendar } from "lucide-react";
+import { FileDown, Download, Calendar, Brain, FileText } from "lucide-react";
+import OpenAIKeyInput from "@/components/ai/OpenAIKeyInput";
+import TaxDeductionAnalyzer from "@/components/ai/TaxDeductionAnalyzer";
+import DocumentAnalyzer from "@/components/ai/DocumentAnalyzer";
 
 export default function TaxCompliance() {
   const [loading, setLoading] = useState(true);
+  const [apiKey, setApiKey] = useState("");
   
   useEffect(() => {
     // Simulate data loading
@@ -42,10 +45,14 @@ export default function TaxCompliance() {
         </div>
         
         <Tabs defaultValue="current" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-4 mb-8">
             <TabsTrigger value="current">Current Quarter</TabsTrigger>
             <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
             <TabsTrigger value="history">Tax History</TabsTrigger>
+            <TabsTrigger value="ai-analysis" className="flex items-center">
+              <Brain className="h-4 w-4 mr-2" />
+              AI Analysis
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="current" className="space-y-6">
@@ -222,6 +229,15 @@ export default function TaxCompliance() {
                 </ul>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="ai-analysis" className="space-y-6">
+            <OpenAIKeyInput onKeySubmit={setApiKey} hasKey={!!apiKey} />
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <TaxDeductionAnalyzer apiKey={apiKey} />
+              <DocumentAnalyzer apiKey={apiKey} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

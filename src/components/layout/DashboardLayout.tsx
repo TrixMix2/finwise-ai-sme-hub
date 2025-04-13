@@ -15,6 +15,7 @@ import {
   Sun, 
   CreditCard,
   DollarSign,
+  Brain,
   LucideIcon,
   Menu,
   X
@@ -124,6 +125,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       title: "Accounts",
       href: "/accounts",
       icon: CreditCard,
+    },
+    {
+      title: "AI Analysis",
+      href: "/ai-analysis",
+      icon: Brain,
     },
     {
       title: "Settings",
