@@ -1,20 +1,14 @@
-
 import { createClient } from '@supabase/supabase-js';
 
-// Default values for development - IMPORTANT: Replace these with your actual Supabase project details
-// when connecting to the Supabase integration
-const DEFAULT_SUPABASE_URL = 'https://your-project-id.supabase.co';
-const DEFAULT_SUPABASE_ANON_KEY = 'your-anon-key';
-
-// Get environment variables from Supabase integration
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+// Specific Supabase project details
+const supabaseUrl = 'https://lpktxlkbkeiklwjtuylb.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxwa3R4bGtia2Vpa2x3anR1eWxiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ2MTA3NjEsImV4cCI6MjA2MDE4Njc2MX0.KBmr1rMsIJPxmSkqa0MOLTMYT_NxzKxKEThw4EW5b3k';
 
 // Initialize the Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Log connection status
-console.log('Supabase client initialized with URL:', supabaseUrl === DEFAULT_SUPABASE_URL ? 'DEFAULT (not connected to integration)' : 'INTEGRATION');
+console.log('Supabase client initialized successfully!');
 
 // Database types based on our schema
 export type User = {
