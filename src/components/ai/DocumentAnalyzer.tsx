@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,7 +51,6 @@ export default function DocumentAnalyzer({ apiKey, provider }: DocumentAnalyzerP
 
       // Save analysis to Supabase if user is authenticated
       if (user) {
-        // Check if we have a documents table or create one
         const { error: tableError } = await supabase
           .from('document_analyses')
           .insert([
