@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,7 +49,7 @@ export default function AuthForm() {
 
     try {
       // First sign up the user
-      const { data: userData, error: signUpError } = await signUp(
+      await signUp(
         registerData.email, 
         registerData.password, 
         { 
@@ -57,54 +58,12 @@ export default function AuthForm() {
         }
       );
 
-      if (signUpError) {
-        toast({
-          title: "Error signing up",
-          description: signUpError.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // After successful signup and with the user authenticated,
-      // create the company
-      const { data: companyData, error: companyError } = await supabase
-        .from('companies')
-        .insert([{ name: registerData.companyName }])
-        .select();
-
-      if (companyError) {
-        toast({
-          title: "Error creating company",
-          description: companyError.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Update the user profile with the company ID
-      const company_id = companyData[0].id;
-      const { error: updateError } = await supabase
-        .from('users')
-        .insert([{
-          id: userData?.user?.id,
-          email: registerData.email,
-          role: registerData.role,
-          company_id: company_id
-        }]);
-
-      if (updateError) {
-        toast({
-          title: "Error updating user profile",
-          description: updateError.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Account created",
-          description: "Your account has been created successfully.",
-        });
-      }
+      // After successful signup, create the company
+      // This will happen when the user is authenticated after email verification
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully. Please check your email for verification.",
+      });
     } catch (error) {
       console.error("Registration error:", error);
       toast({
