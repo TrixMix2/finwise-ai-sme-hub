@@ -54,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       navigate('/dashboard');
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Error signing in",
         description: error.message || "An error occurred during sign in",
@@ -67,23 +68,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, metadata: any) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signUp({ 
+      // Changed to use email confirmation disabled for testing
+      const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
-          data: metadata
+          data: metadata,
+          emailRedirectTo: window.location.origin
         }
       });
       
       if (error) throw error;
       
-      toast({
-        title: "Account created!",
-        description: "You have successfully registered an account. Check your email for verification.",
-      });
-      
-      // We won't navigate here as the user needs to verify their email first
+      // If user was created successfully and auto-confirmed
+      if (data?.user && !data.user.email_confirmed_at) {
+        toast({
+          title: "Account created!",
+          description: "You have successfully registered. Please check your email for verification.",
+        });
+      } else {
+        // Create company after registration (for auto-confirmed users)
+        if (data?.user) {
+          try {
+            // Create the company
+            const { error: companyError, data: companyData } = await supabase
+              .from('companies')
+              .insert([{ name: metadata.company_name }])
+              .select();
+            
+            if (companyError) throw companyError;
+
+            // If company was created successfully, update user with company_id
+            if (companyData && companyData.length > 0) {
+              const company_id = companyData[0].id;
+              const { error: updateError } = await supabase
+                .from('users')
+                .insert([{
+                  id: data.user.id,
+                  email: email,
+                  role: metadata.role,
+                  company_id: company_id
+                }]);
+
+              if (updateError) throw updateError;
+            }
+
+            toast({
+              title: "Success!",
+              description: "You have successfully registered and logged in.",
+            });
+            
+            navigate('/dashboard');
+          } catch (companyError: any) {
+            console.error("Company creation error:", companyError);
+            toast({
+              title: "Error creating company",
+              description: companyError.message || "An error occurred while setting up your account",
+              variant: "destructive",
+            });
+          }
+        }
+      }
     } catch (error: any) {
+      console.error("Registration error:", error);
       toast({
         title: "Error creating account",
         description: error.message || "An error occurred during registration",

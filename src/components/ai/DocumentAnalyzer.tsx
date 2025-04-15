@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,16 +53,14 @@ export default function DocumentAnalyzer({ apiKey, provider }: DocumentAnalyzerP
       if (user) {
         const { error: tableError } = await supabase
           .from('document_analyses')
-          .insert([
-            { 
-              user_id: user.id,
-              document_type: result.documentType,
-              entities: result.entities,
-              summary: result.summary,
-              document_text: documentText,
-              created_at: new Date()
-            }
-          ]);
+          .insert({
+            user_id: user.id,
+            document_type: result.documentType,
+            entities: result.entities,
+            summary: result.summary,
+            document_text: documentText,
+            created_at: new Date().toISOString()
+          });
           
         if (tableError) {
           console.error("Error saving analysis:", tableError);
