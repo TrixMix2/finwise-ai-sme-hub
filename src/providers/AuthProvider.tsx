@@ -65,53 +65,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, metadata: any) => {
     try {
       setLoading(true);
-      const { error, data } = await supabase.auth.signUp({ 
+      
+      const { error: companyError, data: companyData } = await supabase
+        .from('companies')
+        .insert([{ name: metadata.company_name }])
+        .select()
+        .single();
+      
+      if (companyError) throw companyError;
+
+      const { error: signUpError, data } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
-          data: metadata
+          data: {
+            ...metadata,
+            company_id: companyData.id
+          }
         }
       });
       
-      if (error) throw error;
+      if (signUpError) throw signUpError;
       
       if (data?.user) {
-        try {
-          const { error: companyError, data: companyData } = await supabase
-            .from('companies')
-            .insert([{ name: metadata.company_name }])
-            .select();
-          
-          if (companyError) throw companyError;
+        const { error: userError } = await supabase
+          .from('users')
+          .insert([{
+            id: data.user.id,
+            email: email,
+            role: metadata.role,
+            company_id: companyData.id
+          }]);
 
-          if (companyData && companyData.length > 0) {
-            const company_id = companyData[0].id;
-            const { error: updateError } = await supabase
-              .from('users')
-              .insert([{
-                id: data.user.id,
-                email: email,
-                role: metadata.role,
-                company_id: company_id
-              }]);
+        if (userError) throw userError;
 
-            if (updateError) throw updateError;
-          }
-
-          toast({
-            title: "Success!",
-            description: "You have successfully registered. You can now log in.",
-          });
-          
-          await signIn(email, password);
-        } catch (companyError: any) {
-          console.error("Company creation error:", companyError);
-          toast({
-            title: "Error creating company",
-            description: companyError.message || "An error occurred while setting up your account",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "Success!",
+          description: "Your account has been created. You can now log in.",
+        });
+        
+        await signIn(email, password);
       }
     } catch (error: any) {
       console.error("Registration error:", error);
