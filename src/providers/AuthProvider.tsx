@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,14 +22,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -68,65 +65,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, metadata: any) => {
     try {
       setLoading(true);
-      // Changed to use email confirmation disabled for testing
       const { error, data } = await supabase.auth.signUp({ 
         email, 
         password,
         options: {
-          data: metadata,
-          emailRedirectTo: window.location.origin
+          data: metadata
         }
       });
       
       if (error) throw error;
       
-      // If user was created successfully and auto-confirmed
-      if (data?.user && !data.user.email_confirmed_at) {
-        toast({
-          title: "Account created!",
-          description: "You have successfully registered. Please check your email for verification.",
-        });
-      } else {
-        // Create company after registration (for auto-confirmed users)
-        if (data?.user) {
-          try {
-            // Create the company
-            const { error: companyError, data: companyData } = await supabase
-              .from('companies')
-              .insert([{ name: metadata.company_name }])
-              .select();
-            
-            if (companyError) throw companyError;
+      if (data?.user) {
+        try {
+          const { error: companyError, data: companyData } = await supabase
+            .from('companies')
+            .insert([{ name: metadata.company_name }])
+            .select();
+          
+          if (companyError) throw companyError;
 
-            // If company was created successfully, update user with company_id
-            if (companyData && companyData.length > 0) {
-              const company_id = companyData[0].id;
-              const { error: updateError } = await supabase
-                .from('users')
-                .insert([{
-                  id: data.user.id,
-                  email: email,
-                  role: metadata.role,
-                  company_id: company_id
-                }]);
+          if (companyData && companyData.length > 0) {
+            const company_id = companyData[0].id;
+            const { error: updateError } = await supabase
+              .from('users')
+              .insert([{
+                id: data.user.id,
+                email: email,
+                role: metadata.role,
+                company_id: company_id
+              }]);
 
-              if (updateError) throw updateError;
-            }
-
-            toast({
-              title: "Success!",
-              description: "You have successfully registered and logged in.",
-            });
-            
-            navigate('/dashboard');
-          } catch (companyError: any) {
-            console.error("Company creation error:", companyError);
-            toast({
-              title: "Error creating company",
-              description: companyError.message || "An error occurred while setting up your account",
-              variant: "destructive",
-            });
+            if (updateError) throw updateError;
           }
+
+          toast({
+            title: "Success!",
+            description: "You have successfully registered. You can now log in.",
+          });
+          
+          await signIn(email, password);
+        } catch (companyError: any) {
+          console.error("Company creation error:", companyError);
+          toast({
+            title: "Error creating company",
+            description: companyError.message || "An error occurred while setting up your account",
+            variant: "destructive",
+          });
         }
       }
     } catch (error: any) {
