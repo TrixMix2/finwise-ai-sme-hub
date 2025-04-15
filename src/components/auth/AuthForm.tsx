@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/providers/AuthProvider";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function AuthForm() {
   const [isLogin, setIsLogin] = useState(true);
@@ -47,33 +46,73 @@ export default function AuthForm() {
       return;
     }
 
-    // Create company first
-    const { data: companyData, error: companyError } = await supabase
-      .from('companies')
-      .insert([{ name: registerData.companyName }])
-      .select();
+    try {
+      // First sign up the user
+      const { data: userData, error: signUpError } = await signUp(
+        registerData.email, 
+        registerData.password, 
+        { 
+          role: registerData.role,
+          company_name: registerData.companyName
+        }
+      );
 
-    if (companyError) {
+      if (signUpError) {
+        toast({
+          title: "Error signing up",
+          description: signUpError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // After successful signup and with the user authenticated,
+      // create the company
+      const { data: companyData, error: companyError } = await supabase
+        .from('companies')
+        .insert([{ name: registerData.companyName }])
+        .select();
+
+      if (companyError) {
+        toast({
+          title: "Error creating company",
+          description: companyError.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Update the user profile with the company ID
+      const company_id = companyData[0].id;
+      const { error: updateError } = await supabase
+        .from('users')
+        .insert([{
+          id: userData?.user?.id,
+          email: registerData.email,
+          role: registerData.role,
+          company_id: company_id
+        }]);
+
+      if (updateError) {
+        toast({
+          title: "Error updating user profile",
+          description: updateError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Account created",
+          description: "Your account has been created successfully.",
+        });
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
       toast({
-        title: "Error creating company",
-        description: companyError.message,
+        title: "Error",
+        description: "An unexpected error occurred during registration.",
         variant: "destructive",
       });
-      return;
     }
-
-    const company_id = companyData[0].id;
-    
-    // Then sign up the user with company metadata
-    await signUp(
-      registerData.email, 
-      registerData.password, 
-      { 
-        role: registerData.role,
-        company_id,
-        company_name: registerData.companyName
-      }
-    );
   };
 
   return (
